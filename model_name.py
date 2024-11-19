@@ -1,7 +1,12 @@
 import tensorflow as tf
-from keras.layers import Conv1D, MaxPooling1D, Bidirectional, LSTM, Dropout, Dense, Layer, Flatten
-from keras.optimizers import Adam
-import keras.backend as K
+from tensorflow.keras.layers import Conv1D, Bidirectional, LSTM, Dense, Layer, Flatten
+from tensorflow.keras.optimizers import Adam
+import tensorflow.keras.backend as K
+
+gpus = tf.config.list_physical_devices('GPU')
+
+if gpus:
+    tf.config.set_visible_devices(gpus[0], 'GPU')
 
 
 def model_combine(X_train):
@@ -194,9 +199,7 @@ def model_BiLSTM_Attention(X_train):
     BiLSTM_Attention = tf.keras.models.Sequential()
     
     BiLSTM_Attention.add(Bidirectional(LSTM(units=32, return_sequences=True), input_shape=(X_train.shape[1], 1)))
-    
     BiLSTM_Attention.add(Bidirectional(LSTM(units=64, return_sequences=True)))
-    
     BiLSTM_Attention.add(Bidirectional(LSTM(units=128, return_sequences=True)))
 
     class Attention(Layer):
@@ -211,24 +214,26 @@ def model_BiLSTM_Attention(X_train):
             super(Attention, self).build(input_shape)
      
         def call(self, x):
-            e = K.tanh(K.dot(x, self.W) + self.b)
-            e = K.squeeze(e, axis=-1)
-            alpha = K.softmax(e)
-            alpha = K.expand_dims(alpha, axis=-1)
+            # Apply weights and biases
+            e = tf.keras.activations.tanh(tf.tensordot(x, self.W, axes=1) + self.b)
+            e = tf.squeeze(e, axis=-1)
+            alpha = tf.nn.softmax(e)
+            alpha = tf.expand_dims(alpha, axis=-1)
             context = x * alpha
-            context = K.sum(context, axis=1)
+            context = tf.reduce_sum(context, axis=1)
             return context
+        
+        def compute_output_shape(self, input_shape):
+            # Output shape is (batch_size, input_dim)
+            return (input_shape[0], input_shape[-1])
 
     BiLSTM_Attention.add(Attention())
-    
     BiLSTM_Attention.add(Dense(units=128, activation='relu'))
-    
     BiLSTM_Attention.add(Dense(units=1))
     
     BiLSTM_Attention.compile(optimizer=Adam(), loss="mean_squared_error", metrics=['mae'])
     
     return BiLSTM_Attention
-
 
 def select_model(model_name, X_train):
     if model_name == "combine":
