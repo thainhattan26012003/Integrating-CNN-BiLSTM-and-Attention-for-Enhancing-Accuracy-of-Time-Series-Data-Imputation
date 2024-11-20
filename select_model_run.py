@@ -3,14 +3,14 @@ import numpy as np
 import warnings
 from model_name import *
 from utils import *
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from keras.callbacks import EarlyStopping
 
 
 warnings.filterwarnings('ignore')
 pd.set_option('display.float_format', '{:.0f}'.format)
 
-scaler = MinMaxScaler()
+scaler = StandardScaler()
 
 early_stopping = EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=True)
 
@@ -67,8 +67,7 @@ def run(model_name, df, target_col, r):
                                data=data_transformed,
                                test_data = data_test,
                                size_of_gap=size_of_gap)
-        
-        df_after_imputed.loc[nan_index:nan_index + size_of_gap - 1, target_col] = result
+
         
     elif all(value in ending_of_data_checking for value in df_miss): # case 2: missing values belong to last r*size_of_gap part of data 
         print("DATA MISSING BELONG TO THE LAST PART OF DATA")
@@ -79,7 +78,6 @@ def run(model_name, df, target_col, r):
                                test_data = data_test,
                                size_of_gap=size_of_gap)
         
-        df_after_imputed.loc[nan_index:nan_index + size_of_gap - 1, target_col] = result
     
     else: # case: between
         print("DATA MISSING BELONG TO THE BETWEEN PART OF DATA")
@@ -90,14 +88,14 @@ def run(model_name, df, target_col, r):
         Db = data[:nan_index]
 
         MDb = transform_to_multivariate(Da, size_of_gap)
-        data_test_before = df.values.tolist()[nan_index - size_of_gap : nan_index + size_of_gap]
+        data_test_before = df.values.tolist()[nan_index - size_of_gap : nan_index + size_of_gap+1]
         b_result = one_direction(model_name=model_name,
                                  data=MDb,
                                  test_data=data_test_before,
                                  size_of_gap=size_of_gap)
         
         MDa = transform_to_multivariate(Db, size_of_gap)  
-        data_test_after = df.values.tolist()[nan_index:nan_index + 2 * size_of_gap ][::-1]    
+        data_test_after = df.values.tolist()[nan_index:nan_index + 2 * size_of_gap +1][::-1]    
         a_result = one_direction(model_name=model_name,
                                  data=MDa,
                                  test_data=data_test_after,
@@ -106,6 +104,8 @@ def run(model_name, df, target_col, r):
         final_result = [(x + y)/2 for x,y in zip(a_result, b_result)]
         result = final_result
         
-        df_after_imputed.loc[nan_index:nan_index + size_of_gap - 1, target_col] = result
+        
+    return result
+        
     
-    return df_after_imputed
+    

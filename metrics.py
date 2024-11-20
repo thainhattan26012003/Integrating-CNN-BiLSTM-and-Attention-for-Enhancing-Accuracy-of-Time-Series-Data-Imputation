@@ -23,16 +23,16 @@ def RMSE(value_lst_missing, value_lst_after):
 def FB(value_lst_missing, value_lst_after):
     return 2 * abs((np.mean(value_lst_after) - np.mean(value_lst_missing)) / (np.mean(value_lst_after) + np.mean(value_lst_missing)))
 
-def fsd(value_lst_missing, value_lst_after):
+def FSD(value_lst_missing, value_lst_after):
     std_dev_Y = np.std(value_lst_after)
     std_dev_X = np.std(value_lst_missing)
 
     if std_dev_X == 0:
         return None
     
-    fsd = 2 * abs((std_dev_Y - std_dev_X) / (std_dev_X + std_dev_Y))
+    FSD = 2 * abs((std_dev_Y - std_dev_X) / (std_dev_X + std_dev_Y))
     
-    return fsd
+    return FSD
 
 def r_score(value_lst_missing, value_lst_after):
 

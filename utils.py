@@ -26,7 +26,7 @@ def create_continuous_missing_values(dataframe, column_name, num_missing_values)
     modified_df.loc[random_index:random_index + num_missing_values - 1, column_name] = np.nan
     return modified_df, y_truth
 
-def imputed_points_missing_data(df, r):
+def imputed_points_missing_data(df, max_continuous_missing_values):
     start = 0
     while start < len(df):
         if pd.isna(df.iloc[start, 0]):
@@ -35,7 +35,7 @@ def imputed_points_missing_data(df, r):
                 end += 1
             
             # Check if size of missing <= 3 then apply interpolation
-            if end - start <= r:
+            if end - start <= max_continuous_missing_values:
                 df.iloc[start:end] = df.iloc[start-1:end].interpolate(method='linear').iloc[1:]  # interpolate linearly
 
             start = end
@@ -83,10 +83,8 @@ def visualize_for_impute_real_missing_dataset(df, imputed_df, target_col, name_o
     axs[1].set_ylabel('Values')
     axs[1].legend()
     
-    
-    # plt.show(block=False)
-    # plt.pause(5)
-    # plt.close()
-    
-    plt.show()
+    plt.show(block=False)
+    plt.pause(5)
+    plt.close()
+
     
