@@ -19,24 +19,17 @@ for file in os.listdir(foler_path):
 
     target_col = 'Observation'
     max_continuous_missing_values = 2 # for handle points missing if it contain maximum 2 continuous values
-    r = 1 # r for checking the affect of missing values on training process, set higher if large data set
+    r = 2 # r for checking the affect of missing values on training process, set higher if large data set
     # methods = ['combine', 'BiLSTM', 'CNN', 'Attention', 'CNN_BiLSTM', 'BiLSTM_Attention', 'CNN_Attention']
-    methods = ['BiLSTM']
-
-    combine = []
-    CNN = []
-    BiLSTM = []
-    Attention = []
-    CNN_BiLSTM = [] 
-    BiLSTM_Attention = []
-    CNN_Attention = []
+    methods = ['CNN']
 
     for model_name in methods:
-
+        
         if df[target_col].isna().any():
+            df_copy = df.copy()
             while True:
-
-                imputed_points_df = imputed_points_missing_data(df=df, max_continuous_missing_values=max_continuous_missing_values)
+                
+                imputed_points_df = imputed_points_missing_data(df=df_copy, max_continuous_missing_values=max_continuous_missing_values)
                 
                 nan_clusters = find_nan_clusters(imputed_points_df.values)
                 
@@ -62,8 +55,6 @@ for file in os.listdir(foler_path):
                 # replace the results values after imputation to original df, -> handle continous nan clusters
                 imputed_points_df.iloc[start:end] = np.array(results).reshape(-1, 1)
             
-        df = pd.read_excel(file_path).iloc[1:, 1:2].apply(pd.to_numeric, errors='coerce')
-
         visualize_for_impute_real_missing_dataset(df=df, imputed_df=imputed_points_df, target_col=target_col, name_of_dataset=str(file_path))
 
         

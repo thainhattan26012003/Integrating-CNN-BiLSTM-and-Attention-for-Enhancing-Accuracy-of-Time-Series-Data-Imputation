@@ -10,7 +10,7 @@ from keras.callbacks import EarlyStopping
 warnings.filterwarnings('ignore')
 pd.set_option('display.float_format', '{:.0f}'.format)
 
-scaler = StandardScaler()
+scaler = MinMaxScaler()
 
 early_stopping = EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=True)
 
