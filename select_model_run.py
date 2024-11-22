@@ -25,7 +25,7 @@ def one_direction(model_name, data, test_data, size_of_gap):
     
     model_select = select_model(model_name, X_train)
 
-    model = model_select.fit(X_train, y_train, epochs=500, batch_size=256, callbacks=[early_stopping], validation_split=0.2, verbose=0)
+    model = model_select.fit(X_train, y_train, epochs=500, batch_size=256, callbacks=[early_stopping], validation_split=0.2)
 
     # evaluate process 
     test_data = np.concatenate(test_data).ravel()
@@ -55,8 +55,6 @@ def run(model_name, df, target_col, r):
 
     data_missing_ending = data[:nan_index]
     data_missing_begining  = data[nan_index+size_of_gap:][::-1] # inverse for get data feature
-    
-    df_after_imputed = df.copy()
 
     # define case
     if all(value in begining_of_data_checking for value in df_miss): # case 1: missing values belong to first r*size_of_gap part of data 
@@ -105,7 +103,7 @@ def run(model_name, df, target_col, r):
         result = final_result
         
         
-    return result
+    return result, nan_index, size_of_gap
         
     
     
