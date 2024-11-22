@@ -52,23 +52,3 @@ def nse(value_lst_missing, value_lst_after):
     
     return nse
 
-def evaluate(lst_y_truth, lst_y_pred):
-    return {
-        'Similarity' : similarity(lst_y_truth, lst_y_pred),
-        'MAE' : MAE(lst_y_truth, lst_y_pred),
-        'RMSE' : RMSE(lst_y_truth, lst_y_pred),
-        'Fractional Bias' : FB(lst_y_truth, lst_y_pred),
-        'Fractional Standard Deviation' : FSD(lst_y_truth, lst_y_pred)
-    }
-    
-def average_performance_metrics(list_of_dicts):
-    totals = defaultdict(float)
-    counts = defaultdict(int)
-    
-    for d in list_of_dicts:
-        for key, value in d.items():
-            totals[key] += value
-            counts[key] += 1
-
-    averages = {key: totals[key] / counts[key] for key in totals}
-    return averages

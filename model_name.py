@@ -1,14 +1,20 @@
 import os
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 import tensorflow as tf
+
+# List the available GPUs
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    print(f"GPUs available: {gpus}")
+    # Optionally, you can set memory growth to avoid allocating all GPU memory
+    for gpu in gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
+else:
+    print("No GPU found, using CPU.")
+
 from tensorflow.keras.layers import Conv1D, Bidirectional, LSTM, Dense, Layer, Flatten
 from tensorflow.keras.optimizers import Adam
 import tensorflow.keras.backend as K
-
-gpus = tf.config.list_physical_devices('GPU')
-
-if gpus:
-    tf.config.set_visible_devices(gpus[0], 'GPU')
 
 
 def model_combine(X_train):

@@ -4,3 +4,6 @@ GWM_NOAA-201903-201908/
 GWM_NOAA-201909-201912/
 GWM_NOAA-202001-202004/
 tesst.csv
+missing_values_creation/
+full_data_store/
+cuda/
