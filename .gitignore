@@ -7,3 +7,4 @@ tesst.csv
 missing_values_creation/
 full_data_store/
 cuda/
+__pycache__/
