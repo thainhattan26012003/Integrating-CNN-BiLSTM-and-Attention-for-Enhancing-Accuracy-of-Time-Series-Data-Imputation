@@ -25,7 +25,7 @@ def one_direction(model_name, data, test_data, size_of_gap):
     
     model_select = select_model(model_name, X_train)
 
-    model = model_select.fit(X_train, y_train, epochs=500, batch_size=256, callbacks=[early_stopping], validation_split=0.2)
+    model = model_select.fit(X_train, y_train, epochs=20, batch_size=256, callbacks=[early_stopping], validation_split=0.2)
 
     # evaluate process 
     test_data = np.concatenate(test_data).ravel()
@@ -40,7 +40,7 @@ def one_direction(model_name, data, test_data, size_of_gap):
 
 def run(model_name, df, target_col, r):
     data = df[target_col].values.tolist()
-    
+      
     size_of_gap = df[target_col].isna().sum()
 
     nan_index = None
@@ -58,7 +58,7 @@ def run(model_name, df, target_col, r):
 
     # define case
     if all(value in begining_of_data_checking for value in df_miss): # case 1: missing values belong to first r*size_of_gap part of data 
-        print("DATA MISSING BELONG TO THE FIRST PART OF DATA")
+        print("\nDATA MISSING BELONG TO THE FIRST PART OF DATA")
         data_transformed = transform_to_multivariate(data_missing_begining, size_of_gap)
         data_test = df.values.tolist()[nan_index : nan_index + 2 * size_of_gap][::-1]
         result = one_direction(model_name = model_name,
@@ -68,7 +68,7 @@ def run(model_name, df, target_col, r):
 
         
     elif all(value in ending_of_data_checking for value in df_miss): # case 2: missing values belong to last r*size_of_gap part of data 
-        print("DATA MISSING BELONG TO THE LAST PART OF DATA")
+        print("\nDATA MISSING BELONG TO THE LAST PART OF DATA")
         data_transformed = transform_to_multivariate(data_missing_ending, size_of_gap)
         data_test = df.values.tolist()[nan_index - size_of_gap : nan_index + size_of_gap]
         result = one_direction(model_name = model_name,
@@ -78,7 +78,7 @@ def run(model_name, df, target_col, r):
         
     
     else: # case: between
-        print("DATA MISSING BELONG TO THE BETWEEN PART OF DATA")
+        print("\nDATA MISSING BELONG TO THE BETWEEN PART OF DATA")
         ''' a: after 
             b: before
         '''

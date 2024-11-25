@@ -30,6 +30,16 @@ model_lst_CNN_BiLSTM = {'sim': [], 'mae': [], 'rmse': [], 'fsd': [], 'r': [], 'n
 model_lst_CNN_Attention = {'sim': [], 'mae': [], 'rmse': [], 'fsd': [], 'r': [], 'nse': []}
 model_lst_BiLSTM_Attention = {'sim': [], 'mae': [], 'rmse': [], 'fsd': [], 'r': [], 'nse': []}
 
+model_dict = {
+    'Combine': model_lst_combine,
+    'CNN': model_lst_CNN,
+    'BiLSTM': model_lst_BiLSTM,
+    'Attention': model_lst_Attention,
+    'CNN_BiLSTM': model_lst_CNN_BiLSTM,
+    'CNN_Attention': model_lst_CNN_Attention,
+    'BiLSTM_Attention': model_lst_BiLSTM_Attention
+}
+
 # Choose model to apply for all dataset
 model_name = input("Please entern your model you want to work with: ")
 
@@ -95,26 +105,32 @@ for file in os.listdir(original_folder_path):
         
         for file in os.listdir(create_missing_folder_path):
             
-            file_path = os.path.join(create_missing_folder_path, file)
+            file_path_creation = os.path.join(create_missing_folder_path, file)
             
-            df_miss_values = pd.read_csv(file_path)
+            df_miss_values = pd.read_csv(file_path_creation)
                 
             results, nan_index, size_of_gap = run(model_name=model_name, df=df_miss_values, target_col=target_col, r=r)
 
-            similarity_score, MAE_score, RMSE_score, FSD_score, NSE_score = calculate_metrics(results, model_name, nan_index, size_of_gap, model_lst_CNN)
+            similarity_score, MAE_score, RMSE_score, FSD_score, NSE_score = calculate_metrics(file_path=file_path,
+                                                                                              value_lst_after=results,
+                                                                                              model_name=model_name,
+                                                                                              nan_index=nan_index,
+                                                                                              size_of_gap=size_of_gap,
+                                                                                              model_dict=model_dict)
             
-            visualize_for_impute_creation_missing_dataset(df_miss_values[target_col].values.tolist()[nan_index:nan_index+size_of_gap],
+            visualize_for_impute_creation_missing_dataset(original_data=df,
                                                           nan_index=nan_index,
                                                           size_of_gap=size_of_gap,
                                                           imputed_data=results,
                                                           target_col=target_col,
                                                           name_of_dataset=str(file_path),
                                                           similarity_score=similarity_score)
-                
-            # print('combine:', average_performance_metrics(combine))
-            # print('CNN:', average_performance_metrics(CNN))
-            # print('BiLSTM:', average_performance_metrics(BiLSTM))
-            # print('Attention:', average_performance_metrics(Attention))
-            # print('CNN_BiLSTM:', average_performance_metrics(CNN_BiLSTM))
-            # print('BiLSTM_Attention:', average_performance_metrics(BiLSTM_Attention))
-            # print('CNN_Attention:', average_performance_metrics(CNN_Attention))`
+        
+        # Calculate metrics for each cases and models
+        mean_metrics = calculate_mean_metrics(model_dict)
+
+        # show the mean of metrics results
+        for model_name, metrics in mean_metrics.items():
+            print(f"\nMean metrics for {model_name}:")
+            for metric, value in metrics.items():
+                print(f"{metric}: {value}")
