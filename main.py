@@ -11,11 +11,11 @@ from utils import *
 ###############################################################################################
 
 
-original_folder_path = "full_data_store"
+original_folder_path = "GWM_NOAA-202001-202004"
 create_missing_folder_path = 'missing_values_creation'
 
 # for handle points missing if it contain maximum 2 continuous values
-max_continuous_missing_values = 2 
+max_continuous_missing_values = 2
 
 # r for checking the affect of missing values on training process
 r = 2 
@@ -40,59 +40,69 @@ model_dict = {
     'BiLSTM_Attention': model_lst_BiLSTM_Attention
 }
 
-# Choose model to apply for all dataset
-model_name = input("Please entern your model you want to work with: ")
+# Models to apply for all dataset
+models_to_run = ['combine', 'CNN', 'BiLSTM', 'Attention', 'CNN_BiLSTM', 'CNN_Attention', 'BiLSTM_Attention']
 
 for file in os.listdir(original_folder_path):
     file_path = os.path.join(original_folder_path, file)
     
-    # read xlsx/excel file, colect the first column
+    # Read file into DataFrame
     if file.endswith('.xlsx'): 
         df = pd.read_excel(file_path)
-    
-    # read csv file, colect the first column
     elif file.endswith('.csv'):
         df = pd.read_csv(file_path)
-        
-    # List all the features for user select        
+    else:
+        continue  # Skip unsupported file types
+
+    # List features and let user choose
     print("List of features of your data: ", list(df.columns))
-        
     target_col = input("Select your column feature you want to process: ")
             
     if df[target_col].isna().any():
-        print('Dataset has already misssing values!')
+        print(f"Dataset '{file}' has missing values!")
         
         df = df[[target_col]].iloc[1:]
         df = df.apply(pd.to_numeric, errors='coerce')
-        
-        while True:
+        df_copy = df.copy()
 
-            imputed_points_df = imputed_points_missing_data(df=df, max_continuous_missing_values=max_continuous_missing_values)
+        # Dictionary to store imputed results for each model
+        model_results = {}
+
+        for model_name in models_to_run:
+            print(f"Running model: {model_name} on file: {file}")
+
+            imputed_points_df = df_copy.copy()
             
-            nan_clusters = find_nan_clusters(imputed_points_df.values)
+            while True:
+                imputed_points_df = imputed_points_missing_data(
+                    df=imputed_points_df, 
+                    max_continuous_missing_values=max_continuous_missing_values
+                )
+                
+                nan_clusters = find_nan_clusters(imputed_points_df.values)
+                if not nan_clusters:  # No more NaN clusters
+                    break
 
-            # if no any nan values, break
-            if not nan_clusters:
-                break
+                start, end = nan_clusters[0]
+                clusters_data = imputed_points_df.iloc[:end]
+                rest_data = imputed_points_df.iloc[end:].dropna().reset_index(drop=True)
+                first_nan_clusters_only = pd.concat([clusters_data, rest_data])
 
-            start, end = nan_clusters[0]
-            
-            # get the data until the last position of the first nan cluster
-            clusters_data = imputed_points_df.iloc[:end]
-            
-            # get the data after the first nan cluster with drop all the nan values of other clusters
-            rest_data = imputed_points_df.iloc[end:].dropna().reset_index(drop=True)
+                results, _, _ = run(
+                    model_name=model_name, 
+                    df=first_nan_clusters_only, 
+                    target_col=target_col, 
+                    r=r
+                )
+                
+                # Update the DataFrame with imputed results
+                imputed_points_df.iloc[start:end] = np.array(results).reshape(-1, 1)
 
-            # combine 2 data to get the full data contain the first nan clusters
-            first_nan_clusters_only = pd.concat([clusters_data, rest_data])
+            # Save results for visualization
+            model_results[model_name] = imputed_points_df[target_col].values.tolist()
 
-            # impute the first nan cluster
-            results, nan_index, size_of_gap = run(model_name=model_name, df=first_nan_clusters_only, target_col=target_col, r=r)
-            
-            # replace the results values after imputation to original df, -> handle continous nan clusters
-            imputed_points_df.iloc[start:end] = np.array(results).reshape(-1, 1)
-
-        visualize_for_impute_real_missing_dataset(df=df, imputed_df=imputed_points_df, target_col=target_col, name_of_dataset=str(file_path))
+        # Visualize all models on one plot
+        visualize_all_models_with_custom_layout(df, model_results, target_col, file)
 
     
     else:

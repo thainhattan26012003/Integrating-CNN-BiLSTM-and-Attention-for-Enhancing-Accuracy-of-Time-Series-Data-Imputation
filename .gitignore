@@ -9,3 +9,4 @@ full_data_store/
 cuda/
 __pycache__/
 test.py
+test.ipynb

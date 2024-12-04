@@ -133,3 +133,39 @@ def visualize_for_impute_creation_missing_dataset(original_data, nan_index, size
     plt.show(block=False)
     plt.pause(5)
     plt.close()
+
+def visualize_all_models_with_custom_layout(original_df, model_results, target_col, file_name):
+    num_models = len(model_results)  
+    rows, cols = 2, 4  
+
+    fig, axs = plt.subplots(rows, cols, figsize=(5 * cols, 8))  
+    fig.suptitle(f"Imputation Results for File: {file_name}", fontsize=16)
+    
+    axs = axs.flatten()  
+    
+    # Plot original dataset
+    axs[0].plot(original_df[target_col].values.tolist(), label='Original Data', linestyle='-', color='black')
+    axs[0].set_title('Original Dataset')
+    axs[0].set_xlabel('Index')
+    axs[0].set_ylabel('Values')
+    axs[0].legend()
+    axs[0].grid(True)
+    
+    # Plot each models
+    for idx, (model_name, imputed_values) in enumerate(model_results.items(), start=1):
+        axs[idx].plot(imputed_values, label=f'{model_name} Imputed', linestyle='-', color='orange')
+        axs[idx].set_title(f"{model_name} Results")
+        axs[idx].set_xlabel('Index')
+        axs[idx].set_ylabel('Values')
+        axs[idx].legend()
+        axs[idx].grid(True)
+    
+    
+    for idx in range(num_models + 1, len(axs)):
+        fig.delaxes(axs[idx])
+    
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    # plt.show(block=False)
+    # plt.pause(5)
+    # plt.close()
+    plt.show()
