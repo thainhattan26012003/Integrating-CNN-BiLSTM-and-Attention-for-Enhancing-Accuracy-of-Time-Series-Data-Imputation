@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from collections import defaultdict
 
@@ -52,3 +53,44 @@ def nse(value_lst_missing, value_lst_after):
     
     return nse
 
+
+
+# Function to calculate metrics and save results
+def calculate_metrics(file_path, value_lst_after, model_name, nan_index, size_of_gap, model_dict):
+    # Load original data with missing values
+    df_before_missing = pd.read_csv(file_path)
+    value_lst_missing = df_before_missing['Waterlevel'].values.tolist()[nan_index:nan_index+size_of_gap]
+
+    # Calculate metrics
+    similarity_score = similarity(value_lst_after, value_lst_missing)
+    MAE_score = MAE(value_lst_missing, value_lst_after)
+    RMSE_score = RMSE(value_lst_missing, value_lst_after)
+    FSD_score = FSD(value_lst_missing, value_lst_after)
+    NSE_score = nse(value_lst_missing, value_lst_after)
+    
+    model_lst = model_dict[model_name]
+
+    # Add metrics to the model-specific lists (for tracking)
+    model_lst['sim'].append(similarity_score)
+    model_lst['mae'].append(MAE_score)
+    model_lst['rmse'].append(RMSE_score)
+    model_lst['fsd'].append(FSD_score)
+    model_lst['nse'].append(NSE_score)
+
+    # Output results
+    print('\nOri_data:', value_lst_missing)
+    print('\nvalue_data:', value_lst_after)
+    print('\nSimilarity_score:', similarity_score)
+    print('\nMean Absolute Error (MAE):', MAE_score)
+    print('\nRoot Mean Squared Error (RMSE):', RMSE_score)
+    print('\nFraction of Standard Deviation Score:', FSD_score)
+    print('\nThe Nash Sutcliffe efficiency (NSE):', NSE_score)
+
+    return similarity_score, MAE_score, RMSE_score, FSD_score, NSE_score
+    
+# Calculate mean of all run times for each metrics 
+def calculate_mean_metrics(model_dict):
+    mean_metrics = {}
+    for model_name, metrics in model_dict.items():
+        mean_metrics[model_name] = {key: sum(values) / len(values) if values else 0 for key, values in metrics.items()}
+    return mean_metrics
