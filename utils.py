@@ -151,14 +151,14 @@ def saving_results(model_name, sim, mae, rmse, fsd, R, NSE):
     df = pd.DataFrame(data)
     file_name = f"results_{model_name}, GAP_48.csv"
     
-    # Save to CSV, appending without checking file existence
     df.to_csv(file_name, mode='a', header=not os.path.exists(file_name), index=False)
 
 # Function to calculate metrics and save results
-def calculate_metrics(value_lst_after, model_name, nan_index, size_of_gap, model_lst):
+def calculate_metrics(file_path, target_col, value_lst_after, model_name, nan_index, size_of_gap, model_dict):
     # Load original data with missing values
-    df_before_missing = pd.read_csv('Waterlevel.csv')
-    value_lst_missing = df_before_missing['Waterlevel'].values.tolist()[nan_index:nan_index+size_of_gap]
+
+    df_before_missing = pd.read_csv(file_path)
+    value_lst_missing = df_before_missing[target_col].values.tolist()[nan_index:nan_index+size_of_gap]
 
     # Calculate metrics
     similarity_score = similarity(value_lst_after, value_lst_missing)
@@ -166,6 +166,8 @@ def calculate_metrics(value_lst_after, model_name, nan_index, size_of_gap, model
     RMSE_score = RMSE(value_lst_missing, value_lst_after)
     FSD_score = FSD(value_lst_missing, value_lst_after)
     NSE_score = nse(value_lst_missing, value_lst_after)
+    
+    model_lst = model_dict[model_name]
 
     # Add metrics to the model-specific lists (for tracking)
     model_lst['sim'].append(similarity_score)
@@ -184,7 +186,13 @@ def calculate_metrics(value_lst_after, model_name, nan_index, size_of_gap, model
     print('\nThe Nash Sutcliffe efficiency (NSE):', NSE_score)
 
     # Save results to CSV
-    saving_results(model_name, similarity_score, MAE_score, RMSE_score, FSD_score, NSE_score)
+    # saving_results(model_name, similarity_score, MAE_score, RMSE_score, FSD_score, NSE_score)
 
     return similarity_score, MAE_score, RMSE_score, FSD_score, NSE_score
+
+def calculate_mean_metrics(model_dict):
+    mean_metrics = {}
+    for model_name, metrics in model_dict.items():
+        mean_metrics[model_name] = {key: sum(values) / len(values) if values else 0 for key, values in metrics.items()}
+    return mean_metrics
     

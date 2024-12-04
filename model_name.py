@@ -259,4 +259,4 @@ def select_model(model_name, X_train):
     elif model_name == "BiLSTM_Attention":
         return model_BiLSTM_Attention(X_train)
     else:
-        raise("There are not model model name accepted!")    
+        raise("There are not model name accepted!")    
