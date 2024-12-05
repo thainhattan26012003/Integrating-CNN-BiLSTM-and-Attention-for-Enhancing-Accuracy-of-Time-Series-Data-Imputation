@@ -10,7 +10,7 @@ from keras.callbacks import EarlyStopping
 warnings.filterwarnings('ignore')
 pd.set_option('display.float_format', '{:.0f}'.format)
 
-scaler = MinMaxScaler()
+scaler = StandardScaler()
 
 early_stopping = EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=True)
 
@@ -25,7 +25,7 @@ def one_direction(model_name, data, test_data, size_of_gap):
     
     model_select = select_model(model_name, X_train)
 
-    model = model_select.fit(X_train, y_train, epochs=256, batch_size=128, callbacks=[early_stopping], validation_split=0.2)
+    model = model_select.fit(X_train, y_train, epochs=500, batch_size=256, callbacks=[early_stopping], validation_split=0.2)
 
     # evaluate process 
     test_data = np.concatenate(test_data).ravel()

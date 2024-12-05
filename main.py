@@ -14,11 +14,15 @@ from utils import *
 original_folder_path = "GWM_NOAA-202001-202004"
 create_missing_folder_path = 'missing_values_creation'
 
+
+img_folder = 'plot_img'
+os.makedirs(img_folder, exist_ok=True)
+
 # for handle points missing if it contain maximum 2 continuous values
 max_continuous_missing_values = 2
 
 # r for checking the affect of missing values on training process
-r = 2 
+r = 2
 
 
 # Dictionary to store the results to compute mean of 10 times of imputation create time series missing data
@@ -43,6 +47,8 @@ model_dict = {
 # Models to apply for all dataset
 models_to_run = ['combine', 'CNN', 'BiLSTM', 'Attention', 'CNN_BiLSTM', 'CNN_Attention', 'BiLSTM_Attention']
 
+target_col = 'Observation'
+
 for file in os.listdir(original_folder_path):
     file_path = os.path.join(original_folder_path, file)
     
@@ -54,9 +60,9 @@ for file in os.listdir(original_folder_path):
     else:
         continue  # Skip unsupported file types
 
-    # List features and let user choose
-    print("List of features of your data: ", list(df.columns))
-    target_col = input("Select your column feature you want to process: ")
+    # # List features and let user choose
+    # print("List of features of your data: ", list(df.columns))
+    # target_col = input("Select your column feature you want to process: ")
             
     if df[target_col].isna().any():
         print(f"Dataset '{file}' has missing values!")
@@ -102,7 +108,7 @@ for file in os.listdir(original_folder_path):
             model_results[model_name] = imputed_points_df[target_col].values.tolist()
 
         # Visualize all models on one plot
-        visualize_all_models_with_custom_layout(df, model_results, target_col, file)
+        visualize_all_models_with_custom_layout(df, model_results, target_col, file, img_folder)
 
     
     else:

@@ -1,6 +1,7 @@
-import os
-os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 import tensorflow as tf
+from tensorflow.keras.layers import Conv1D, Bidirectional, LSTM, Dense, Layer, Flatten
+from tensorflow.keras.optimizers import Adam
+import tensorflow.keras.backend as K
 
 # List the available GPUs
 gpus = tf.config.list_physical_devices('GPU')
@@ -11,26 +12,22 @@ if gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
 else:
     print("No GPU found, using CPU.")
-
-from tensorflow.keras.layers import Conv1D, Bidirectional, LSTM, Dense, Layer, Flatten
-from tensorflow.keras.optimizers import Adam
-import tensorflow.keras.backend as K
-
+    
 
 def model_combine(X_train):
     combine = tf.keras.models.Sequential()
 
-    combine.add(Conv1D(filters=8, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
+    combine.add(Conv1D(filters=32, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
     
-    combine.add(Conv1D(filters=16, kernel_size=3, activation='relu'))
+    combine.add(Conv1D(filters=64, kernel_size=3, activation='relu'))
     
-    combine.add(Conv1D(filters=32, kernel_size=3, activation='relu'))
-    
-    combine.add(Bidirectional(LSTM(units=8, return_sequences=True)))
-    
-    combine.add(Bidirectional(LSTM(units=16, return_sequences=True)))
+    combine.add(Conv1D(filters=128, kernel_size=3, activation='relu'))
     
     combine.add(Bidirectional(LSTM(units=32, return_sequences=True)))
+    
+    combine.add(Bidirectional(LSTM(units=64, return_sequences=True)))
+    
+    combine.add(Bidirectional(LSTM(units=128, return_sequences=True)))
 
     class Attention(Layer):
         def __init__(self, **kwargs):
@@ -54,7 +51,7 @@ def model_combine(X_train):
 
     combine.add(Attention())
     
-    combine.add(Dense(units=32, activation='relu'))
+    combine.add(Dense(units=128, activation='relu'))
     
     combine.add(Dense(units=1))
     
@@ -66,15 +63,15 @@ def model_combine(X_train):
 def model_CNN(X_train):
     CNN = tf.keras.models.Sequential()
 
-    CNN.add(Conv1D(filters=8, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
+    CNN.add(Conv1D(filters=32, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
     
-    CNN.add(Conv1D(filters=16, kernel_size=3, activation='relu'))
+    CNN.add(Conv1D(filters=64, kernel_size=3, activation='relu'))
     
-    CNN.add(Conv1D(filters=32, kernel_size=3, activation='relu'))
+    CNN.add(Conv1D(filters=128, kernel_size=3, activation='relu'))
 
     CNN.add(Flatten())
     
-    CNN.add(Dense(units=32, activation='relu'))
+    CNN.add(Dense(units=128, activation='relu'))
     
     CNN.add(Dense(units=1))
     
@@ -86,13 +83,13 @@ def model_CNN(X_train):
 def model_BiLSTM(X_train):
     BiLSTM = tf.keras.models.Sequential()
     
-    BiLSTM.add(Bidirectional(LSTM(units=8, return_sequences=True), input_shape=(X_train.shape[1], 1)))
+    BiLSTM.add(Bidirectional(LSTM(units=32, return_sequences=True), input_shape=(X_train.shape[1], 1)))
     
-    BiLSTM.add(Bidirectional(LSTM(units=16, return_sequences=True)))
+    BiLSTM.add(Bidirectional(LSTM(units=64, return_sequences=True)))
     
-    BiLSTM.add(Bidirectional(LSTM(units=32)))
+    BiLSTM.add(Bidirectional(LSTM(units=128)))
     
-    BiLSTM.add(Dense(units=32, activation='relu'))
+    BiLSTM.add(Dense(units=128, activation='relu'))
     
     BiLSTM.add(Dense(units=1))
     
@@ -104,11 +101,11 @@ def model_BiLSTM(X_train):
 def model_CNN_Attention(X_train):
     CNN_Attention = tf.keras.models.Sequential()
 
-    CNN_Attention.add(Conv1D(filters=8, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
+    CNN_Attention.add(Conv1D(filters=32, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
     
-    CNN_Attention.add(Conv1D(filters=16, kernel_size=3, activation='relu'))
+    CNN_Attention.add(Conv1D(filters=64, kernel_size=3, activation='relu'))
     
-    CNN_Attention.add(Conv1D(filters=32, kernel_size=3, activation='relu'))
+    CNN_Attention.add(Conv1D(filters=128, kernel_size=3, activation='relu'))
 
     class Attention(Layer):
         def __init__(self, **kwargs):
@@ -132,7 +129,7 @@ def model_CNN_Attention(X_train):
 
     CNN_Attention.add(Attention())
     
-    CNN_Attention.add(Dense(units=32, activation='relu'))
+    CNN_Attention.add(Dense(units=128, activation='relu'))
     
     CNN_Attention.add(Dense(units=1))
     
@@ -170,7 +167,7 @@ def model_Attention(X_train):
 
     AttentionModel.add(Attention(input_shape=(X_train.shape[1], 1)))
     
-    AttentionModel.add(Dense(units=32, activation='relu'))
+    AttentionModel.add(Dense(units=128, activation='relu'))
     
     AttentionModel.add(Dense(units=1))
     
@@ -182,19 +179,19 @@ def model_Attention(X_train):
 def model_CNN_BiLSTM(X_train):
     CNN_BiLSTM = tf.keras.models.Sequential()
 
-    CNN_BiLSTM.add(Conv1D(filters=8, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
+    CNN_BiLSTM.add(Conv1D(filters=32, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
     
-    CNN_BiLSTM.add(Conv1D(filters=16, kernel_size=3, activation='relu'))
+    CNN_BiLSTM.add(Conv1D(filters=64, kernel_size=3, activation='relu'))
     
-    CNN_BiLSTM.add(Conv1D(filters=32, kernel_size=3, activation='relu'))
+    CNN_BiLSTM.add(Conv1D(filters=128, kernel_size=3, activation='relu'))
     
-    CNN_BiLSTM.add(Bidirectional(LSTM(units=8, return_sequences=True)))
+    CNN_BiLSTM.add(Bidirectional(LSTM(units=32, return_sequences=True)))
     
-    CNN_BiLSTM.add(Bidirectional(LSTM(units=16, return_sequences=True)))
+    CNN_BiLSTM.add(Bidirectional(LSTM(units=64, return_sequences=True)))
     
-    CNN_BiLSTM.add(Bidirectional(LSTM(units=32)))
+    CNN_BiLSTM.add(Bidirectional(LSTM(units=128)))
     
-    CNN_BiLSTM.add(Dense(units=32, activation='relu'))
+    CNN_BiLSTM.add(Dense(units=128, activation='relu'))
     
     CNN_BiLSTM.add(Dense(units=1))
     
@@ -206,9 +203,9 @@ def model_CNN_BiLSTM(X_train):
 def model_BiLSTM_Attention(X_train):
     BiLSTM_Attention = tf.keras.models.Sequential()
     
-    BiLSTM_Attention.add(Bidirectional(LSTM(units=8, return_sequences=True), input_shape=(X_train.shape[1], 1)))
-    BiLSTM_Attention.add(Bidirectional(LSTM(units=16, return_sequences=True)))
-    BiLSTM_Attention.add(Bidirectional(LSTM(units=32, return_sequences=True)))
+    BiLSTM_Attention.add(Bidirectional(LSTM(units=32, return_sequences=True), input_shape=(X_train.shape[1], 1)))
+    BiLSTM_Attention.add(Bidirectional(LSTM(units=64, return_sequences=True)))
+    BiLSTM_Attention.add(Bidirectional(LSTM(units=128, return_sequences=True)))
 
     class Attention(Layer):
         def __init__(self, **kwargs):
@@ -236,12 +233,13 @@ def model_BiLSTM_Attention(X_train):
             return (input_shape[0], input_shape[-1])
 
     BiLSTM_Attention.add(Attention())
-    BiLSTM_Attention.add(Dense(units=32, activation='relu'))
+    BiLSTM_Attention.add(Dense(units=128, activation='relu'))
     BiLSTM_Attention.add(Dense(units=1))
     
     BiLSTM_Attention.compile(optimizer=Adam(), loss="mean_squared_error", metrics=['mae'])
     
     return BiLSTM_Attention
+
 
 def select_model(model_name, X_train):
     if model_name == "combine":

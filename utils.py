@@ -134,7 +134,7 @@ def visualize_for_impute_creation_missing_dataset(original_data, nan_index, size
     plt.pause(5)
     plt.close()
 
-def visualize_all_models_with_custom_layout(original_df, model_results, target_col, file_name):
+def visualize_all_models_with_custom_layout(original_df, model_results, target_col, file_name, img_folder):
     num_models = len(model_results)  
     rows, cols = 2, 4  
 
@@ -164,8 +164,12 @@ def visualize_all_models_with_custom_layout(original_df, model_results, target_c
     for idx in range(num_models + 1, len(axs)):
         fig.delaxes(axs[idx])
     
+    vis_name = file_name.split()[0]
+    
     plt.tight_layout(rect=[0, 0, 1, 0.95])
-    # plt.show(block=False)
-    # plt.pause(5)
-    # plt.close()
-    plt.show()
+    filename = f'{vis_name}.png'
+    full_path = os.path.join(img_folder, filename)
+    plt.savefig(full_path)
+    plt.show(block=False)
+    plt.pause(5)
+    plt.close()
